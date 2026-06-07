@@ -3,7 +3,7 @@ import unittest
 from job_posting_cli.collect import get_path, parse_limit, record_fields, set_path
 from datetime import datetime, timedelta
 
-from job_posting_cli.url_export import clean_value, filter_export_rows, normalize_site_row, parse_datetime
+from job_posting_cli.url_export import clean_value, filter_export_rows, normalize_site_row, parse_datetime, unsupported_url_message
 
 
 class CollectTests(unittest.TestCase):
@@ -54,6 +54,12 @@ class CollectTests(unittest.TestCase):
 
         self.assertEqual([row["公司"] for row in filtered], ["甲公司"])
         self.assertIsNotNone(parse_datetime("2026-06-07 00:00:00"))
+
+    def test_unsupported_dynamic_site_message(self):
+        message = unsupported_url_message("www.zhipin.com")
+
+        self.assertIn("浏览器登录态", message)
+        self.assertIn("清洗 CSV", message)
 
 
 if __name__ == "__main__":

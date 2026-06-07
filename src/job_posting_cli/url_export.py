@@ -52,7 +52,17 @@ def export_url(
             keywords=keywords,
             published_within_days=published_within_days,
         )
-    raise ValueError("暂未识别该网址的数据结构。你可以使用“接口采集”标签页手动配置公开 JSON API。")
+    raise ValueError(unsupported_url_message(host))
+
+
+def unsupported_url_message(host: str) -> str:
+    if "zhipin.com" in host:
+        return (
+            "该招聘搜索页通常需要浏览器登录态、动态渲染或风控校验，不能用“粘贴网址导出”模式直接抓取。"
+            "请优先使用平台允许的导出文件并在“清洗 CSV”中处理；如果你有可访问的公开 JSON API，"
+            "可以在“接口采集”标签页手动配置。"
+        )
+    return "暂未识别该网址的数据结构。你可以使用“接口采集”标签页手动配置公开 JSON API，或先导出 CSV 后用“清洗 CSV”处理。"
 
 
 def export_known_recruitment_site(
