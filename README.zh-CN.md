@@ -8,7 +8,8 @@
 
 ## 能做什么
 
-- 提供好上手的桌面 GUI，适合先从点选文件和填写表单开始。
+- 提供中文桌面 GUI，适合先从粘贴网址、点选文件和填写表单开始。
+- 内置 Offer星球一键导出：粘贴 `https://offer.gfjianli.com/` 即可生成 Excel。
 - 从公开分页 JSON API 采集岗位数据，并记录采集元信息。
 - 清洗 CSV 导出文件，自动识别常见中英文列名。
 - 规范化薪资区间、城市、关键词匹配和重复岗位。
@@ -30,6 +31,7 @@ python -m pip install -e .
 ```bash
 job-postings --help
 job-postings-gui
+job-postings url https://offer.gfjianli.com/ --out-dir outputs/offer
 job-postings collect --help
 job-postings clean --help
 ```
@@ -58,21 +60,39 @@ PYTHONPATH=src python -m job_posting_cli.cli --help
 job-postings-gui
 ```
 
-桌面窗口里有两个标签页：
+桌面窗口里有三个标签页：
 
+- `粘贴网址导出`：粘贴支持的招聘网站网址，一键导出 Excel。目前已内置支持 Offer星球。
 - `Clean CSV`：选择输入 CSV，填写城市、关键词、最低薪资，选择输出目录，然后点击 `Run Clean`。
 - `Collect API`：填写 API URL、请求方法、JSON payload、JSON 路径、采集数量、输出目录，然后点击 `Run Collect`。
 
 推荐第一次这样用：
 
-1. 打开 `Clean CSV`。
-2. 点击 `Input CSV` 旁边的 `Browse`，选择招聘数据 CSV。
-3. 保持 `Also export formatted XLSX files` 勾选。
-4. 填写 `Cities` 和 `Keywords`。
-5. 点击 `Run Clean`。
-6. 完成后点击 `Open Output Folder` 查看结果。
+1. 打开 `粘贴网址导出`。
+2. 把 `https://offer.gfjianli.com/` 粘贴到 `招聘网址`。
+3. 保持 `最多导出条数` 为 `20000`。
+4. 点击 `一键导出 Excel`。
+5. 完成后点击 `打开输出文件夹` 查看 `.xlsx`。
 
 GUI 和命令行生成的是同一套文件，所以可以随时在图形界面和 CLI 之间切换。
+
+## 粘贴网址一键导出 Excel
+
+如果只想要 Excel，不想配置接口参数，使用：
+
+```bash
+job-postings url https://offer.gfjianli.com/ --out-dir outputs/offer
+```
+
+当前内置支持：
+
+- `https://offer.gfjianli.com/`：导出 Offer星球公开校招信息，默认最多请求 20000 条。工具会生成 `offer星球_校招信息_时间戳.xlsx` 和导出摘要 JSON。
+
+如果网站需要登录授权，可在 GUI 的 `登录 Token（可选）` 中填写 token，或用命令行参数：
+
+```bash
+job-postings url https://offer.gfjianli.com/ --token "你的token" --out-dir outputs/offer
+```
 
 ## 使用流程
 
@@ -179,10 +199,16 @@ job-postings clean input.csv \
 
 ## 示例
 
-启动图形界面：
+启动中文图形界面：
 
 ```bash
 job-postings-gui
+```
+
+粘贴 Offer星球网址直接导出 Excel：
+
+```bash
+job-postings url https://offer.gfjianli.com/ --out-dir outputs/offer
 ```
 
 筛选上海和北京的 AI / 大模型岗位，最低薪资 10000，并导出 XLSX：

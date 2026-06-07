@@ -8,7 +8,8 @@ This is a normal CLI package. It does not require Codex, ChatGPT, OpenAI APIs, o
 
 ## What You Can Do
 
-- Use a beginner-friendly desktop GUI for CSV cleaning and API collection.
+- Use a Chinese beginner-friendly desktop GUI for URL-to-Excel export, CSV cleaning, and API collection.
+- Built-in Offer Xingqiu export: paste `https://offer.gfjianli.com/` to generate an Excel workbook.
 - Collect paginated public JSON APIs with polite delays and capture metadata.
 - Clean CSV exports with English and Chinese column aliases.
 - Normalize salary ranges, city text, keyword matches, and duplicate rows.
@@ -30,6 +31,7 @@ Check that the CLI is available:
 ```bash
 job-postings --help
 job-postings-gui
+job-postings url https://offer.gfjianli.com/ --out-dir outputs/offer
 job-postings collect --help
 job-postings clean --help
 ```
@@ -58,21 +60,39 @@ For most users, start here:
 job-postings-gui
 ```
 
-The desktop window has two tabs:
+The desktop window has three tabs:
 
-- `Clean CSV`: choose an input CSV, set cities, keywords, minimum salary, choose an output folder, and click `Run Clean`.
-- `Collect API`: enter the API URL, method, JSON payload, JSON paths, limit, output folder, and click `Run Collect`.
+- `粘贴网址导出`: paste a supported job site URL and export Excel in one click. Offer Xingqiu is built in.
+- `清洗 CSV`: choose an input CSV, set cities, keywords, minimum salary, choose an output folder, and run cleaning.
+- `接口采集`: enter the API URL, method, JSON payload, JSON paths, limit, output folder, and collect data.
 
 Recommended first run:
 
-1. Open `Clean CSV`.
-2. Click `Browse` next to `Input CSV`.
-3. Keep `Also export formatted XLSX files` enabled.
-4. Fill `Cities` and `Keywords`.
-5. Click `Run Clean`.
-6. Click `Open Output Folder` when it finishes.
+1. Open `粘贴网址导出`.
+2. Paste `https://offer.gfjianli.com/` into `招聘网址`.
+3. Keep `最多导出条数` as `20000`.
+4. Click `一键导出 Excel`.
+5. Click `打开输出文件夹` when it finishes.
 
 The GUI writes the same files as the CLI, so you can switch between GUI and command-line workflows at any time.
+
+## Paste URL And Export Excel
+
+If you only want an Excel workbook and do not want to configure API parameters, run:
+
+```bash
+job-postings url https://offer.gfjianli.com/ --out-dir outputs/offer
+```
+
+Built-in support:
+
+- `https://offer.gfjianli.com/`: exports public Offer Xingqiu campus recruitment records. The default maximum is 20000 records. The tool writes `offer星球_校招信息_TIMESTAMP.xlsx` plus a JSON export summary.
+
+If authorized data requires a login token, use the GUI field `登录 Token（可选）` or pass:
+
+```bash
+job-postings url https://offer.gfjianli.com/ --token "YOUR_TOKEN" --out-dir outputs/offer
+```
 
 ## Workflow
 
