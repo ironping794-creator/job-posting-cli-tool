@@ -1,6 +1,6 @@
 # 招聘岗位 CLI 工具
 
-[English](README.md) | [简体中文](README.zh-CN.md)
+[简体中文](README.md) | [English](README.en.md)
 
 这是一个可复用的 Python 图形界面和命令行工具，用来采集、清洗、筛选和汇总公开招聘岗位数据。
 
