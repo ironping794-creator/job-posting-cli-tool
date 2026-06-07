@@ -52,6 +52,16 @@ def export_url(
             keywords=keywords,
             published_within_days=published_within_days,
         )
+    static_path = export_static_html_page(
+        normalized,
+        Path(out_dir),
+        max_records=max_records,
+        cities=cities,
+        keywords=keywords,
+        published_within_days=published_within_days,
+    )
+    if static_path is not None:
+        return static_path
     raise ValueError(unsupported_url_message(host))
 
 
@@ -107,11 +117,12 @@ def export_known_recruitment_site(
         "total_reported": data.get("total"),
         "rows_exported": len(rows),
         "max_records": max_records,
+        "max_export_records": max_records,
         "scan_limit": max_records,
         "city_filter": cities,
         "keyword_filter": keywords,
         "published_within_days": published_within_days,
-        "note": "scan_limit/max_records is the maximum number of source records read before filters are applied. If the data source reports more rows than the scan limit, increase it or provide authorization when appropriate.",
+        "note": "max_export_records is the maximum number of source records kept before filters are applied. The final Excel row count may be lower after filters.",
     }
     (out_dir / f"招聘信息导出摘要_{timestamp}.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2),
@@ -127,9 +138,128 @@ def fetch_json(url: str, headers: dict[str, str]) -> dict[str, Any]:
     return json.loads(raw.decode("utf-8"))
 
 
+def fetch_text(url: str) -> str:
+    req = request.Request(url, headers={"User-Agent": "Mozilla/5.0"}, method="GET")
+    with request.urlopen(req, timeout=120) as response:
+        raw = response.read()
+    return raw.decode("utf-8", errors="replace")
+
+
+def export_static_html_page(
+    url: str,
+    out_dir: Path,
+    max_records: int = 20000,
+    cities: str = "",
+    keywords: str = "",
+    published_within_days: int | None = None,
+) -> Path | None:
+    html_text = fetch_text(url)
+    rows = extract_nuxt_job_rows(html_text, url)
+    if not rows:
+        return None
+
+    rows = rows[:max_records]
+    rows = filter_export_rows(rows, cities, keywords, published_within_days)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    xlsx_path = out_dir / f"招聘信息导出_{timestamp}.xlsx"
+    write_xlsx(xlsx_path, rows, EXPORT_FIELDS, "招聘信息")
+    summary = {
+        "source_url": url,
+        "export_time": datetime.now().isoformat(timespec="seconds"),
+        "source_type": "static_html_nuxt_payload",
+        "rows_exported": len(rows),
+        "max_export_records": max_records,
+        "scan_limit": max_records,
+        "city_filter": cities,
+        "keyword_filter": keywords,
+        "published_within_days": published_within_days,
+        "note": "This export used structured data embedded in the page HTML. It may only include the records present in the initial page payload.",
+    }
+    (out_dir / f"招聘信息导出摘要_{timestamp}.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return xlsx_path
+
+
+def extract_nuxt_job_rows(html_text: str, source_url: str) -> list[dict[str, str]]:
+    marker = 'id="__NUXT_DATA__"'
+    marker_index = html_text.find(marker)
+    if marker_index < 0:
+        return []
+    script_start = html_text.rfind("<script", 0, marker_index)
+    content_start = html_text.find(">", marker_index)
+    content_end = html_text.find("</script>", content_start)
+    if script_start < 0 or content_start < 0 or content_end < 0:
+        return []
+
+    payload_text = html.unescape(html_text[content_start + 1 : content_end])
+    try:
+        payload = json.loads(payload_text)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(payload, list):
+        return []
+
+    resolved = resolve_nuxt_payload(payload, 0)
+    records = find_job_like_records(resolved)
+    rows = [normalize_site_row(record, source_url) for record in records]
+    return dedupe_rows(rows)
+
+
+def resolve_nuxt_payload(payload: list[Any], value: Any, cache: dict[int, Any] | None = None) -> Any:
+    if cache is None:
+        cache = {}
+    if isinstance(value, int) and 0 <= value < len(payload):
+        if value in cache:
+            return cache[value]
+        cache[value] = None
+        cache[value] = resolve_nuxt_payload(payload, payload[value], cache)
+        return cache[value]
+    if isinstance(value, dict):
+        return {key: resolve_nuxt_payload(payload, item, cache) for key, item in value.items()}
+    if isinstance(value, list):
+        if value and isinstance(value[0], str):
+            tag = value[0]
+            if tag in {"Reactive", "ShallowReactive", "Ref"} and len(value) > 1:
+                return resolve_nuxt_payload(payload, value[1], cache)
+            if tag == "EmptyRef":
+                return ""
+            if tag == "Set":
+                return [resolve_nuxt_payload(payload, item, cache) for item in value[1:]]
+        return [resolve_nuxt_payload(payload, item, cache) for item in value]
+    return value
+
+
+def find_job_like_records(value: Any) -> list[dict[str, Any]]:
+    found: list[dict[str, Any]] = []
+    if isinstance(value, dict):
+        if {"company", "title", "workLocation", "positions"}.issubset(value.keys()):
+            found.append(value)
+        for item in value.values():
+            found.extend(find_job_like_records(item))
+    elif isinstance(value, list):
+        for item in value:
+            found.extend(find_job_like_records(item))
+    return found
+
+
+def dedupe_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    seen: set[tuple[str, str, str]] = set()
+    deduped: list[dict[str, str]] = []
+    for row in rows:
+        key = (row.get("公司", ""), row.get("标题", ""), row.get("投递方式", ""))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped
+
+
 def normalize_site_row(row: dict[str, Any], source_url: str) -> dict[str, str]:
     return {
-        "发布时间": clean_value(row.get("recordTime")),
+        "发布时间": clean_date_value(row.get("recordTime") or row.get("createTime") or row.get("updateTime")),
         "公司": clean_value(row.get("company")),
         "标题": clean_value(row.get("title")),
         "投递方式": clean_value(row.get("referralMethod")),
@@ -148,6 +278,18 @@ def clean_value(value: Any) -> str:
     if value is None:
         return ""
     return html.unescape(str(value)).strip()
+
+
+def clean_date_value(value: Any) -> str:
+    if isinstance(value, (int, float)):
+        timestamp = float(value)
+        if timestamp > 10_000_000_000:
+            timestamp = timestamp / 1000
+        try:
+            return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+        except (OSError, OverflowError, ValueError):
+            return clean_value(value)
+    return clean_value(value)
 
 
 def split_filter_terms(value: str) -> list[str]:
@@ -218,7 +360,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Paste a supported job site URL and export an Excel workbook.")
     parser.add_argument("url")
     parser.add_argument("--out-dir", default="outputs/url_export")
-    parser.add_argument("--max-records", type=int, default=20000, help="Maximum source records to scan before filters are applied.")
+    parser.add_argument("--max-records", type=int, default=20000, help="Maximum source records to keep before filters are applied.")
     parser.add_argument("--token", default="", help="Optional site token for authorized exports.")
     parser.add_argument("--cities", default="", help="Optional city filter, comma-separated.")
     parser.add_argument("--keywords", default="", help="Optional title/company/position keyword filter, comma-separated.")

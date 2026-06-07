@@ -92,7 +92,7 @@ job-postings url "JOB_PAGE_URL" --cities "Shanghai,Beijing" --keywords "AI,Algor
 
 The tool writes `招聘信息导出_TIMESTAMP.xlsx` plus a JSON export summary. If authorized data requires a login token, use the GUI field `登录 Token（可选）` or pass:
 
-`--max-records` / the GUI field `最多扫描条数` means the maximum number of source records to read before filters are applied. It is not the final Excel row count. The final export is filtered by city, keyword, and publication-date settings. If a data source has no practical limit, there is no need to call out a limit; if the source/API has a limit, the summary JSON records both the scan limit and exported row count.
+`--max-records` / the GUI field `最多导出条数` means the maximum number of source records to keep before filters are applied. It is not the final Excel row count. The final export is filtered by city, keyword, and publication-date settings. If a data source has no practical limit, there is no need to call out a limit; if the source/API has a limit, the summary JSON records both `max_export_records` and exported row count.
 
 Note: URL-to-Excel export is not a browser crawler for arbitrary pages. Recruitment search pages that require login state, dynamic rendering, CAPTCHA, or anti-automation checks usually cannot be exported directly. In those cases, use an allowed platform export and process it with `清洗 CSV`, or configure `接口采集` when you have access to a public JSON API.
 

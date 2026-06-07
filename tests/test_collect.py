@@ -3,7 +3,15 @@ import unittest
 from job_posting_cli.collect import get_path, parse_limit, record_fields, set_path
 from datetime import datetime, timedelta
 
-from job_posting_cli.url_export import clean_value, filter_export_rows, normalize_site_row, parse_datetime, unsupported_url_message
+from job_posting_cli.url_export import (
+    clean_date_value,
+    clean_value,
+    extract_nuxt_job_rows,
+    filter_export_rows,
+    normalize_site_row,
+    parse_datetime,
+    unsupported_url_message,
+)
 
 
 class CollectTests(unittest.TestCase):
@@ -21,13 +29,14 @@ class CollectTests(unittest.TestCase):
 
     def test_site_row_normalization(self):
         row = normalize_site_row(
-            {"recordTime": "2026-06-07 00:00:00", "company": "测试公司", "referralMethod": "a&amp;b"},
+            {"createTime": 1780719839407, "company": "测试公司", "referralMethod": "a&amp;b"},
             "https://example.com/jobs",
         )
-        self.assertEqual(row["发布时间"], "2026-06-07 00:00:00")
+        self.assertTrue(row["发布时间"].startswith("2026-"))
         self.assertEqual(row["公司"], "测试公司")
         self.assertEqual(row["投递方式"], "a&b")
         self.assertEqual(clean_value(None), "")
+        self.assertTrue(clean_date_value(1780719839407).startswith("2026-"))
 
     def test_url_export_filters_city_and_keywords(self):
         rows = [
@@ -60,6 +69,21 @@ class CollectTests(unittest.TestCase):
 
         self.assertIn("浏览器登录态", message)
         self.assertIn("清洗 CSV", message)
+
+    def test_extract_nuxt_job_rows(self):
+        html = """
+        <script type="application/json" id="__NUXT_DATA__">
+        [["ShallowReactive",1],{"data":2},["ShallowReactive",3],{"jobs":4},[5],
+        {"company":6,"title":7,"workLocation":8,"industry":9,"positions":10,"referralMethod":11,"createTime":12},
+        "测试公司","测试招聘","上海","互联网","算法工程师","https://example.com/apply",1780719839407]
+        </script>
+        """
+
+        rows = extract_nuxt_job_rows(html, "https://example.com/jobs")
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["公司"], "测试公司")
+        self.assertEqual(rows[0]["岗位"], "算法工程师")
 
 
 if __name__ == "__main__":

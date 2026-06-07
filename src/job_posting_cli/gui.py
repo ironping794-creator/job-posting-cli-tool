@@ -113,7 +113,7 @@ class JobPostingApp(tk.Tk):
             state="readonly",
         ).grid(row=5, column=1, sticky="w", pady=6)
         ttk.Label(frame, text="按发布时间过滤，可选最近 1 个月/半年/一年").grid(row=5, column=2, sticky="w", padx=(8, 0))
-        self._entry_row(frame, 6, "最多扫描条数", self.url_vars["max_records"], "筛选前最多读取多少条；可改小以快速测试")
+        self._entry_row(frame, 6, "最多导出条数", self.url_vars["max_records"], "筛选前最多保留多少条；可改小以快速测试")
         self._entry_row(frame, 7, "登录 Token（可选）", self.url_vars["token"], "通常不用填；需要授权数据时再填")
 
         actions = ttk.Frame(frame)
@@ -260,7 +260,7 @@ class JobPostingApp(tk.Tk):
         try:
             max_records = int(self.url_vars["max_records"].get().strip() or "20000")
             if max_records <= 0:
-                raise ValueError("最多扫描条数必须大于 0。")
+                raise ValueError("最多导出条数必须大于 0。")
         except ValueError as exc:
             messagebox.showwarning("数字格式错误", str(exc))
             return
