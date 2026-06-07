@@ -4,17 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "job-posting-cli-tool"
-version = "0.1.0"
-description = "AI-free CLI tools for collecting, cleaning, filtering, and reporting job postings."
+version = "0.2.0"
+description = "AI-free CLI and GUI tools for collecting, cleaning, filtering, and reporting job postings."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "ironping794-creator" }]
 dependencies = ["openpyxl>=3.1"]
-keywords = ["jobs", "recruitment", "scraping", "csv", "xlsx", "cli"]
+keywords = ["jobs", "recruitment", "scraping", "csv", "xlsx", "cli", "gui"]
 
 [project.scripts]
 job-postings = "job_posting_cli.cli:main"
+job-postings-gui = "job_posting_cli.gui:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -2,12 +2,13 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-这是一个可复用的 Python 命令行工具，用来采集、清洗、筛选和汇总公开招聘岗位数据。
+这是一个可复用的 Python 图形界面和命令行工具，用来采集、清洗、筛选和汇总公开招聘岗位数据。
 
 它是普通 CLI 包，运行时不依赖 Codex、ChatGPT、OpenAI API 或任何 AI 能力。
 
 ## 能做什么
 
+- 提供好上手的桌面 GUI，适合先从点选文件和填写表单开始。
 - 从公开分页 JSON API 采集岗位数据，并记录采集元信息。
 - 清洗 CSV 导出文件，自动识别常见中英文列名。
 - 规范化薪资区间、城市、关键词匹配和重复岗位。
@@ -28,6 +29,7 @@ python -m pip install -e .
 
 ```bash
 job-postings --help
+job-postings-gui
 job-postings collect --help
 job-postings clean --help
 ```
@@ -37,14 +39,40 @@ job-postings clean --help
 ```powershell
 python -m pip install -r requirements.txt
 $env:PYTHONPATH="src"
+python -m job_posting_cli.gui
 python -m job_posting_cli.cli --help
 ```
 
 macOS 或 Linux 使用：
 
 ```bash
+PYTHONPATH=src python -m job_posting_cli.gui
 PYTHONPATH=src python -m job_posting_cli.cli --help
 ```
+
+## 先从 GUI 开始
+
+大多数用户建议先运行：
+
+```bash
+job-postings-gui
+```
+
+桌面窗口里有两个标签页：
+
+- `Clean CSV`：选择输入 CSV，填写城市、关键词、最低薪资，选择输出目录，然后点击 `Run Clean`。
+- `Collect API`：填写 API URL、请求方法、JSON payload、JSON 路径、采集数量、输出目录，然后点击 `Run Collect`。
+
+推荐第一次这样用：
+
+1. 打开 `Clean CSV`。
+2. 点击 `Input CSV` 旁边的 `Browse`，选择招聘数据 CSV。
+3. 保持 `Also export formatted XLSX files` 勾选。
+4. 填写 `Cities` 和 `Keywords`。
+5. 点击 `Run Clean`。
+6. 完成后点击 `Open Output Folder` 查看结果。
+
+GUI 和命令行生成的是同一套文件，所以可以随时在图形界面和 CLI 之间切换。
 
 ## 使用流程
 
@@ -150,6 +178,12 @@ job-postings clean input.csv \
 清洗后还会保留派生字段，例如 `salary_min`、`salary_max`、`salary_unit`、`matched_keywords`、`is_target_city`、`is_salary_known`、`dedupe_key`。
 
 ## 示例
+
+启动图形界面：
+
+```bash
+job-postings-gui
+```
 
 筛选上海和北京的 AI / 大模型岗位，最低薪资 10000，并导出 XLSX：
 

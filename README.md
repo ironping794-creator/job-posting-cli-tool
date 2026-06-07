@@ -2,12 +2,13 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-Reusable Python command-line tools for collecting, cleaning, filtering, and reporting public job postings.
+Reusable Python GUI and command-line tools for collecting, cleaning, filtering, and reporting public job postings.
 
 This is a normal CLI package. It does not require Codex, ChatGPT, OpenAI APIs, or any AI runtime.
 
 ## What You Can Do
 
+- Use a beginner-friendly desktop GUI for CSV cleaning and API collection.
 - Collect paginated public JSON APIs with polite delays and capture metadata.
 - Clean CSV exports with English and Chinese column aliases.
 - Normalize salary ranges, city text, keyword matches, and duplicate rows.
@@ -28,6 +29,7 @@ Check that the CLI is available:
 
 ```bash
 job-postings --help
+job-postings-gui
 job-postings collect --help
 job-postings clean --help
 ```
@@ -37,14 +39,40 @@ If you do not want to install the package, you can still run it from the source 
 ```bash
 python -m pip install -r requirements.txt
 $env:PYTHONPATH="src"
+python -m job_posting_cli.gui
 python -m job_posting_cli.cli --help
 ```
 
 On macOS or Linux, use:
 
 ```bash
+PYTHONPATH=src python -m job_posting_cli.gui
 PYTHONPATH=src python -m job_posting_cli.cli --help
 ```
+
+## Start With The GUI
+
+For most users, start here:
+
+```bash
+job-postings-gui
+```
+
+The desktop window has two tabs:
+
+- `Clean CSV`: choose an input CSV, set cities, keywords, minimum salary, choose an output folder, and click `Run Clean`.
+- `Collect API`: enter the API URL, method, JSON payload, JSON paths, limit, output folder, and click `Run Collect`.
+
+Recommended first run:
+
+1. Open `Clean CSV`.
+2. Click `Browse` next to `Input CSV`.
+3. Keep `Also export formatted XLSX files` enabled.
+4. Fill `Cities` and `Keywords`.
+5. Click `Run Clean`.
+6. Click `Open Output Folder` when it finishes.
+
+The GUI writes the same files as the CLI, so you can switch between GUI and command-line workflows at any time.
 
 ## Workflow
 
@@ -150,6 +178,12 @@ Common Chinese aliases are mapped automatically, including:
 The cleaner preserves normalized fields such as `salary_min`, `salary_max`, `salary_unit`, `matched_keywords`, `is_target_city`, `is_salary_known`, and `dedupe_key`.
 
 ## Examples
+
+Launch the GUI:
+
+```bash
+job-postings-gui
+```
 
 Clean Shanghai and Beijing AI-related roles with a minimum salary of 10,000:
 
