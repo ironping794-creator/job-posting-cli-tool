@@ -1,4 +1,4 @@
-# 招聘岗位 CLI 工具
+# 招聘岗位 GUI 工具
 
 [简体中文](README.md) | [English](README.en.md)
 
@@ -25,8 +25,8 @@
 克隆仓库，进入项目目录，并以可编辑模式安装：
 
 ```bash
-git clone https://github.com/ironping794-creator/job-posting-cli-tool.git
-cd job-posting-cli-tool
+git clone https://github.com/ironping794-creator/job-posting-gui-tool.git
+cd job-posting-gui-tool
 python -m pip install -e .
 ```
 

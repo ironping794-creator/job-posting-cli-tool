@@ -1,4 +1,4 @@
-# Job Posting CLI Tool
+# Job Posting GUI Tool
 
 [English](README.en.md) | [简体中文](README.md)
 
@@ -25,8 +25,8 @@ This is a normal CLI package. It does not require Codex, ChatGPT, OpenAI APIs, o
 Clone the repository, enter the project folder, and install it in editable mode:
 
 ```bash
-git clone https://github.com/ironping794-creator/job-posting-cli-tool.git
-cd job-posting-cli-tool
+git clone https://github.com/ironping794-creator/job-posting-gui-tool.git
+cd job-posting-gui-tool
 python -m pip install -e .
 ```
 
