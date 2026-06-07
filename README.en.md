@@ -30,7 +30,7 @@ cd job-posting-gui-tool
 python -m pip install -e .
 ```
 
-Check that the CLI is available:
+Check that the GUI and commands are available:
 
 ```bash
 job-postings --help

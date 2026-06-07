@@ -2,9 +2,9 @@
 
 [简体中文](README.md) | [English](README.en.md)
 
-这是一个可复用的 Python 图形界面和命令行工具，用来采集、清洗、筛选和汇总公开招聘岗位数据。
+这是一个 GUI 优先的 Python 工具，用来采集、清洗、筛选和汇总公开招聘岗位数据，同时保留命令行入口方便自动化。
 
-它是普通 CLI 包，运行时不依赖 Codex、ChatGPT、OpenAI API 或任何 AI 能力。
+它是普通 Python 包，运行时不依赖 Codex、ChatGPT、OpenAI API 或任何 AI 能力。
 
 ## GUI 效果图
 
@@ -30,7 +30,7 @@ cd job-posting-gui-tool
 python -m pip install -e .
 ```
 
-检查命令是否可用：
+检查 GUI 和命令是否可用：
 
 ```bash
 job-postings --help
